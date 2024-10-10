@@ -1,4 +1,4 @@
-<?php
+<?php 
 session_start();
 ?>
 
@@ -26,14 +26,19 @@ session_start();
             <nav class="d-none d-md-flex">
                 <a href="index.php" class="text-white me-3">Inicio</a>
                 <a href="catalogo_libros.php" class="text-white me-3">Catálogo</a>
-                <a href="registro_usuarios.php" class="text-white me-3">Registro de Usuarios</a>
+
+                <!-- Solo visible para administradores -->
+                <?php if (isset($_SESSION['tipo_usuario']) && $_SESSION['tipo_usuario'] == 'Administrador'): ?>
+                    <a href="registro_usuarios.php" class="text-white me-3">Registro de Usuarios</a>
+                    <a href="admin_libros.php" class="text-white">Administración</a>
+                <?php endif; ?>
+
                 <a href="mis_prestamos_reservas.php" class="text-white me-3">Préstamos y Reservas</a>
-                <a href="admin_libros.php" class="text-white">Administración</a>
             </nav>
 
             <!-- Buscador -->
-            <form class="d-flex me-3" role="search">
-                <input class="form-control me-2" type="search" placeholder="Buscar libros" aria-label="Buscar">
+            <form class="d-flex me-3" action="catalogo_libros.php" method="GET" role="search">
+                <input class="form-control me-2" type="search" name="search" placeholder="Buscar libros" aria-label="Buscar" value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
                 <button class="btn btn-outline-light" type="submit">Buscar</button>
             </form>
 

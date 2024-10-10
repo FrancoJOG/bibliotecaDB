@@ -1,37 +1,73 @@
 <?php
-session_start();
+include 'header.php';
 
 // Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION['usuario_id'])) {
-    header("Location: iniciar_sesion.php");
-    exit();
+    echo "<script>alert('Por favor, inicia sesión para ver tu perfil.'); window.location.href='iniciar_sesion.php';</script>";
+    exit;
 }
 
-// Obtener el nombre del usuario desde la sesión
-$nombre_usuario = $_SESSION['usuario_nombre'];
+// Conexión a la base de datos
+$conexion = new mysqli('localhost', 'root', '', 'biblioteca');
+if ($conexion->connect_error) {
+    die("Conexión fallida: (" . $conexion->connect_errno . ") " . $conexion->connect_error);
+}
+
+$usuario_id = $_SESSION['usuario_id'];
+
+// Actualizar la información del perfil
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $nombre = $conexion->real_escape_string($_POST['nombre']);
+    $direccion = $conexion->real_escape_string($_POST['direccion']);
+    $telefono = $conexion->real_escape_string($_POST['telefono']);
+    $correo = $conexion->real_escape_string($_POST['correo']);
+    
+    $update_query = "UPDATE Usuarios SET nombre = '$nombre', direccion = '$direccion', telefono = '$telefono', correo = '$correo' WHERE usuario_id = $usuario_id";
+    
+    if ($conexion->query($update_query)) {
+        echo "<script>alert('Perfil actualizado exitosamente.'); window.location.href='perfil_usuario.php';</script>";
+    } else {
+        echo "<script>alert('Error al actualizar el perfil: " . $conexion->error . "');</script>";
+    }
+}
+
+// Obtener la información actual del usuario
+$query = "SELECT * FROM Usuarios WHERE usuario_id = $usuario_id";
+$resultado = $conexion->query($query);
+
+if ($resultado->num_rows == 1) {
+    $usuario = $resultado->fetch_assoc();
+} else {
+    echo "<script>alert('Usuario no encontrado.'); window.location.href='index.php';</script>";
+    exit;
+}
 ?>
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <title>Perfil de Usuario</title>
-</head>
-<body>
-    <?php include 'header.php'; ?>
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Mi Perfil</h2>
+    
+    <form action="perfil_usuario.php" method="POST">
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre Completo</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" value="<?php echo htmlspecialchars($usuario['nombre']); ?>" required>
+        </div>
+        <div class="mb-3">
+            <label for="direccion" class="form-label">Dirección</label>
+            <input type="text" class="form-control" id="direccion" name="direccion" value="<?php echo htmlspecialchars($usuario['direccion']); ?>">
+        </div>
+        <div class="mb-3">
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input type="text" class="form-control" id="telefono" name="telefono" value="<?php echo htmlspecialchars($usuario['telefono']); ?>">
+        </div>
+        <div class="mb-3">
+            <label for="correo" class="form-label">Correo Electrónico</label>
+            <input type="email" class="form-control" id="correo" name="correo" value="<?php echo htmlspecialchars($usuario['correo']); ?>" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Actualizar Perfil</button>
+    </form>
+</div>
 
-    <div class="container">
-        <h2>Bienvenido, <?php echo htmlspecialchars($nombre_usuario); ?>!</h2>
-        <p>Aquí puedes ver tu información personal y actualizarla.</p>
-        <!-- Puedes agregar más secciones aquí para mostrar información adicional o permitir la edición -->
-    </div>
-
-    <footer class="bg-dark text-white text-center p-3 mt-4">
-        <p>Biblioteca &copy; 2024. Todos los derechos reservados.</p>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?php 
+$conexion->close();
+include 'footer.php'; 
+?>
