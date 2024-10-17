@@ -14,7 +14,7 @@ session_start();
 </head>
 <body>
  <!-- Header -->
- <header class="bg-dark text-white p-3 mb-4">
+ <header class=" text-white p-3 mb-4 bg4" >
         <div class="container d-flex justify-content-between align-items-center">
             <!-- Logo de la Biblioteca -->
             <div class="d-flex align-items-center">
@@ -28,9 +28,9 @@ session_start();
                 <a href="catalogo_libros.php" class="text-white me-3">Catálogo</a>
 
                 <!-- Solo visible para administradores -->
-                <?php if (isset($_SESSION['tipo_usuario']) && $_SESSION['tipo_usuario'] == 'Administrador'): ?>
-                    <a href="registro_usuarios.php" class="text-white me-3">Registro de Usuarios</a>
-                    <a href="admin_libros.php" class="text-white">Administración</a>
+                <?php if (isset($_SESSION['tipo_usuario']) && $_SESSION['tipo_usuario'] == 'Otro'): ?>
+                    <a href="registro_usuarios.php" class="text-white me-3">Registro de Usuarios</a> 
+                    <a href="admin_libros.php" class="text-white">Administración</a> &nbsp;&nbsp;&nbsp;
                 <?php endif; ?>
 
                 <a href="mis_prestamos_reservas.php" class="text-white me-3">Préstamos y Reservas</a>

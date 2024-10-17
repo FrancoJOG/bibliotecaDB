@@ -1,4 +1,5 @@
-<?php
+<?php 
+
 include 'header.php';
 
 // Verificar si el usuario ha iniciado sesión
@@ -21,8 +22,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $direccion = $conexion->real_escape_string($_POST['direccion']);
     $telefono = $conexion->real_escape_string($_POST['telefono']);
     $correo = $conexion->real_escape_string($_POST['correo']);
+    $nueva_contrasena = $_POST['nueva_contrasena'];
+    $confirmar_contrasena = $_POST['confirmar_contrasena'];
+
+    // Actualizar la consulta
+    $update_query = "UPDATE Usuarios SET nombre = '$nombre', direccion = '$direccion', telefono = '$telefono', correo = '$correo'";
     
-    $update_query = "UPDATE Usuarios SET nombre = '$nombre', direccion = '$direccion', telefono = '$telefono', correo = '$correo' WHERE usuario_id = $usuario_id";
+    // Si se proporciona una nueva contraseña y coincide con la confirmación, la agregamos a la consulta
+    if (!empty($nueva_contrasena) && $nueva_contrasena === $confirmar_contrasena) {
+        $nueva_contrasena = $conexion->real_escape_string($nueva_contrasena);
+        $update_query .= ", contraseña = '$nueva_contrasena'";
+    } elseif (!empty($nueva_contrasena) && $nueva_contrasena !== $confirmar_contrasena) {
+        echo "<script>alert('Las contraseñas no coinciden. Por favor, inténtalo de nuevo.');</script>";
+    }
+    
+    $update_query .= " WHERE usuario_id = $usuario_id";
     
     if ($conexion->query($update_query)) {
         echo "<script>alert('Perfil actualizado exitosamente.'); window.location.href='perfil_usuario.php';</script>";
@@ -63,6 +77,17 @@ if ($resultado->num_rows == 1) {
             <label for="correo" class="form-label">Correo Electrónico</label>
             <input type="email" class="form-control" id="correo" name="correo" value="<?php echo htmlspecialchars($usuario['correo']); ?>" required>
         </div>
+
+        <!-- Campos para cambiar la contraseña -->
+        <div class="mb-3">
+            <label for="nueva_contrasena" class="form-label">Nueva Contraseña</label>
+            <input type="password" class="form-control" id="nueva_contrasena" name="nueva_contrasena">
+        </div>
+        <div class="mb-3">
+            <label for="confirmar_contrasena" class="form-label">Confirmar Nueva Contraseña</label>
+            <input type="password" class="form-control" id="confirmar_contrasena" name="confirmar_contrasena">
+        </div>
+
         <button type="submit" class="btn btn-primary w-100">Actualizar Perfil</button>
     </form>
 </div>

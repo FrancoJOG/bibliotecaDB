@@ -1,5 +1,5 @@
         <!-- Footer -->
-        <footer class="bg-dark text-white text-center p-3 mt-4">
+        <footer class="bg4 text-white text-center p-3 mt-4">
                 <p>Biblioteca &copy; 2024. Todos los derechos reservados.</p>
         </footer>
 

@@ -1,3 +1,9 @@
+:root {
+    --bs-blue: 0, 254, 135;
+    --bs-primary: 0, 254, 135;
+    --bs-primary-rgb: 0, 254, 135;
+}
+
 html, body {
     height: 100%;
     margin: 0;
@@ -14,4 +20,36 @@ footer {
     color: #fff;
     text-align: center;
     padding: 1rem;
+}
+
+.bg-azul{
+    background-color: #00bfff;
+}
+
+.bg-1{
+    background-color: #00bfff;
+}
+
+
+.bg-2{
+    background-color: #ff008c;
+}
+
+
+.bg-3{
+    background-color: #fff700;
+}
+
+.bg4{
+    background: linear-gradient(45deg, #00bfff, #ff008c, #fff700);
+}
+
+.bg5{
+    background-color: #283b39;
+}
+
+.btn-primary{
+    border: 0;
+    background-color: #ff008c;
+    color: #fff;
 }

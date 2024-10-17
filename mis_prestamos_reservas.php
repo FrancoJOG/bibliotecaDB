@@ -17,6 +17,11 @@ $usuario_id = $_SESSION['usuario_id'];
 
 <div class="container mt-5">
     <h1 class="text-center mb-4">Mis Préstamos y Reservas</h1>
+    
+    <!-- Botón para abrir la modal de reserva -->
+    <div class="mb-4 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reservarModal">Reservar Libro</button>
+    </div>
 
     <!-- Préstamos Activos -->
     <h2>Préstamos Activos</h2>
@@ -89,6 +94,42 @@ $usuario_id = $_SESSION['usuario_id'];
             ?>
         </tbody>
     </table>
+</div>
+
+<!-- Modal para crear una reserva -->
+<div class="modal fade" id="reservarModal" tabindex="-1" aria-labelledby="reservarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reservarModalLabel">Reservar Libro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reservarForm" method="POST" action="crear_reserva.php">
+                    <input type="hidden" name="usuario_id" value="<?php echo $usuario_id; ?>">
+                    
+                    <div class="mb-3">
+                        <label for="libro_id" class="form-label">Selecciona un Libro</label>
+                        <select class="form-select" id="libro_id" name="libro_id" required>
+                            <?php
+                            // Obtener libros disponibles
+                            $libros_query = "SELECT libro_id, titulo FROM Libros WHERE ejemplares_disponibles > 0";
+                            $libros = $conexion->query($libros_query);
+                            while ($libro = $libros->fetch_assoc()) {
+                                echo '<option value="' . $libro['libro_id'] . '">' . $libro['titulo'] . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_reserva" class="form-label">Fecha de Reserva</label>
+                        <input type="date" class="form-control" id="fecha_reserva" name="fecha_reserva" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <?php 

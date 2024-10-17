@@ -27,7 +27,7 @@
             </select>
         </div>
         <div class="col-md-4">
-            <button type="submit" class="btn btn-primary w-100">Buscar</button>
+            <button type="submit" class="btn btn-primary w-100 bg-2">Buscar</button>
         </div>
     </form>
 

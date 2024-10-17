@@ -98,7 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     echo '<td>' . $libro['isbn'] . '</td>';
                     echo '<td>' . $libro['ejemplares_disponibles'] . '</td>';
                     echo '<td>';
-                    echo '<a href="editar_libro.php?libro_id=' . $libro['libro_id'] . '" class="btn btn-sm btn-warning">Editar</a> ';
+                    echo '<button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editarModal" onclick="cargarLibro(' . $libro['libro_id'] . ')">Editar</button> ';
+                    echo '<button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#reservarModal" onclick="cargarReserva(' . $libro['libro_id'] . ')">Reservar/Prestar</button> ';
                     echo '<a href="eliminar_libro.php?libro_id=' . $libro['libro_id'] . '" class="btn btn-sm btn-danger" onclick="return confirm(\'¿Estás seguro de eliminar este libro?\');">Eliminar</a>';
                     echo '</td>';
                     echo '</tr>';
@@ -110,6 +111,96 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </tbody>
     </table>
 </div>
+
+<!-- Modal para crear reserva o préstamo -->
+<div class="modal fade" id="reservarModal" tabindex="-1" aria-labelledby="reservarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reservarModalLabel">Reservar o Prestar Libro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="reservarForm" method="POST" action="reservar_prestar_libro.php">
+                    <input type="hidden" name="libro_id" id="reservaLibroId">
+                    
+                    <div class="mb-3">
+                        <label for="usuario_id" class="form-label">Usuario</label>
+                        <select class="form-select" id="usuario_id" name="usuario_id" required>
+                            <?php
+                            // Obtener usuarios
+                            $usuarios_query = "SELECT usuario_id, nombre FROM Usuarios";
+                            $usuarios = $conexion->query($usuarios_query);
+                            while ($usuario = $usuarios->fetch_assoc()) {
+                                echo '<option value="' . $usuario['usuario_id'] . '">' . $usuario['nombre'] . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Acción</label>
+                        <select class="form-select" name="tipo_accion" required>
+                            <option value="prestamo">Préstamo</option>
+                            <option value="reserva">Reserva</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_accion" class="form-label">Fecha de Acción</label>
+                        <input type="date" class="form-control" id="fecha_accion" name="fecha_accion" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Confirmar Acción</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function cargarLibro(libroId) {
+        // Llamada AJAX para cargar la información del libro y sus ejemplares en la modal
+        fetch('cargar_libro.php?libro_id=' + libroId)
+            .then(response => response.json())
+            .then(data => {
+                // Asignar valores a los campos del modal
+                document.getElementById('modalLibroId').value = data.libro_id;
+                document.getElementById('modalTitulo').value = data.titulo;
+                document.getElementById('modalAutor').value = data.autor;
+                document.getElementById('modalEditorial').value = data.editorial;
+                document.getElementById('modalAnio').value = data.anio_publicacion;
+                document.getElementById('modalISBN').value = data.isbn;
+
+                // Cargar los ejemplares
+                let ejemplaresDiv = document.getElementById('modalEjemplares');
+                ejemplaresDiv.innerHTML = ''; // Limpiar contenido anterior
+                data.ejemplares.forEach(ejemplar => {
+                    ejemplaresDiv.innerHTML += `
+                        <div class="mb-3">
+                            <label for="ejemplar_${ejemplar.ejemplar_id}" class="form-label">Ejemplar ${ejemplar.codigo_ejemplar}</label>
+                            <input type="text" class="form-control" id="ejemplar_${ejemplar.ejemplar_id}" name="ejemplares[${ejemplar.ejemplar_id}]" value="${ejemplar.estado}">
+                            <button type="button" class="btn btn-danger" onclick="eliminarEjemplar(${ejemplar.ejemplar_id})">Eliminar</button>
+                        </div>
+                    `;
+                });
+            });
+
+
+    }
+
+    function eliminarEjemplar(ejemplarId) {
+        // Lógica para eliminar un ejemplar, utilizando AJAX para una eliminación rápida
+        fetch('eliminar_ejemplar.php?ejemplar_id=' + ejemplarId, { method: 'DELETE' })
+            .then(response => response.text())
+            .then(result => {
+                alert(result); // Mensaje de confirmación
+                document.getElementById('ejemplar_' + ejemplarId).parentNode.remove(); // Elimina del DOM
+            });
+    }
+
+    function cargarReserva(libroId) {
+        document.getElementById('reservaLibroId').value = libroId;
+    }
+</script>
 
 <?php 
 $conexion->close();
