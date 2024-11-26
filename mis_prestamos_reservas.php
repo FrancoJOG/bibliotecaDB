@@ -1,4 +1,4 @@
-<?php 
+<?php  
 include 'header.php'; 
 
 if (!isset($_SESSION['usuario_id'])) {
@@ -23,24 +23,29 @@ $usuario_id = $_SESSION['usuario_id'];
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reservarModal">Reservar Libro</button>
     </div>
 
-    <!-- Préstamos Activos -->
-    <h2>Préstamos Activos</h2>
+    <!-- Historial de Préstamos -->
+    <h2>Historial de Préstamos</h2>
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Título del Libro</th>
                 <th>Fecha de Préstamo</th>
                 <th>Fecha de Devolución</th>
+                <th>Estado</th>
                 <th>Acción</th>
             </tr>
         </thead>
         <tbody>
             <?php
-            $prestamos_query = "SELECT Libros.titulo, Prestamos.fecha_prestamo, Prestamos.fecha_devolucion, Prestamos.prestamo_id 
+            $prestamos_query = "SELECT Prestamos.prestamo_id, Libros.titulo, Prestamos.fecha_prestamo, Prestamos.fecha_devolucion, 
+                                       CASE 
+                                           WHEN Prestamos.fecha_devolucion IS NULL THEN 'Activo' 
+                                           ELSE 'Devuelto' 
+                                       END AS estado 
                                 FROM Prestamos 
                                 INNER JOIN Ejemplares ON Prestamos.ejemplar_id = Ejemplares.ejemplar_id
                                 INNER JOIN Libros ON Ejemplares.libro_id = Libros.libro_id
-                                WHERE Prestamos.usuario_id = $usuario_id AND Prestamos.fecha_devolucion IS NULL";
+                                WHERE Prestamos.usuario_id = $usuario_id";
             $prestamos = $conexion->query($prestamos_query);
 
             if ($prestamos->num_rows > 0) {
@@ -49,18 +54,23 @@ $usuario_id = $_SESSION['usuario_id'];
                     echo '<td>' . $prestamo['titulo'] . '</td>';
                     echo '<td>' . $prestamo['fecha_prestamo'] . '</td>';
                     echo '<td>' . ($prestamo['fecha_devolucion'] ? $prestamo['fecha_devolucion'] : 'Pendiente') . '</td>';
-                    echo '<td><a href="devolver_libro.php?prestamo_id=' . $prestamo['prestamo_id'] . '" class="btn btn-sm btn-danger">Devolver</a></td>';
+                    echo '<td>' . $prestamo['estado'] . '</td>';
+                    if ($prestamo['estado'] === 'Activo') {
+                        echo '<td><a href="acciones_prestamos.php?accion=devolver&prestamo_id=' . $prestamo['prestamo_id'] . '" class="btn btn-sm btn-danger">Devolver</a></td>';
+                    } else {
+                        echo '<td>-</td>';
+                    }
                     echo '</tr>';
                 }
             } else {
-                echo '<tr><td colspan="4" class="text-center">No tienes préstamos activos.</td></tr>';
+                echo '<tr><td colspan="5" class="text-center">No tienes préstamos registrados.</td></tr>';
             }
             ?>
         </tbody>
     </table>
 
-    <!-- Reservas Activas -->
-    <h2>Reservas Activas</h2>
+    <!-- Historial de Reservas -->
+    <h2>Historial de Reservas</h2>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -72,11 +82,17 @@ $usuario_id = $_SESSION['usuario_id'];
         </thead>
         <tbody>
             <?php
-            $reservas_query = "SELECT Libros.titulo, Reservas.fecha_reserva, Reservas.estado, Reservas.reserva_id 
+            $reservas_query = "SELECT Reservas.reserva_id, Libros.titulo, Reservas.fecha_reserva, 
+                                      CASE 
+                                          WHEN Reservas.estado = 'Activa' THEN 'Activa' 
+                                          WHEN Reservas.estado = 'Cancelada' THEN 'Cancelada' 
+                                          WHEN Reservas.estado = 'Expirada' THEN 'Expirada' 
+                                          ELSE 'Desconocido' 
+                                      END AS estado 
                                FROM Reservas 
                                INNER JOIN Ejemplares ON Reservas.ejemplar_id = Ejemplares.ejemplar_id
                                INNER JOIN Libros ON Ejemplares.libro_id = Libros.libro_id
-                               WHERE Reservas.usuario_id = $usuario_id AND Reservas.estado = 'Activa'";
+                               WHERE Reservas.usuario_id = $usuario_id";
             $reservas = $conexion->query($reservas_query);
 
             if ($reservas->num_rows > 0) {
@@ -85,11 +101,15 @@ $usuario_id = $_SESSION['usuario_id'];
                     echo '<td>' . $reserva['titulo'] . '</td>';
                     echo '<td>' . $reserva['fecha_reserva'] . '</td>';
                     echo '<td>' . $reserva['estado'] . '</td>';
-                    echo '<td><a href="cancelar_reserva.php?reserva_id=' . $reserva['reserva_id'] . '" class="btn btn-sm btn-danger">Cancelar</a></td>';
+                    if ($reserva['estado'] === 'Activa') {
+                        echo '<td><a href="acciones_reservas.php?accion=cancelar&reserva_id=' . $reserva['reserva_id'] . '" class="btn btn-sm btn-danger">Cancelar</a></td>';
+                    } else {
+                        echo '<td>-</td>';
+                    }
                     echo '</tr>';
                 }
             } else {
-                echo '<tr><td colspan="4" class="text-center">No tienes reservas activas.</td></tr>';
+                echo '<tr><td colspan="4" class="text-center">No tienes reservas registradas.</td></tr>';
             }
             ?>
         </tbody>
@@ -112,7 +132,6 @@ $usuario_id = $_SESSION['usuario_id'];
                         <label for="libro_id" class="form-label">Selecciona un Libro</label>
                         <select class="form-select" id="libro_id" name="libro_id" required>
                             <?php
-                            // Obtener libros disponibles
                             $libros_query = "SELECT libro_id, titulo FROM Libros WHERE ejemplares_disponibles > 0";
                             $libros = $conexion->query($libros_query);
                             while ($libro = $libros->fetch_assoc()) {
@@ -136,3 +155,4 @@ $usuario_id = $_SESSION['usuario_id'];
 $conexion->close();
 include 'footer.php'; 
 ?>
+
