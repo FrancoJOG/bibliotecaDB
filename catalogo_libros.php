@@ -18,10 +18,17 @@
                     die("Conexión fallida: (" . $conexion->connect_errno . ") " . $conexion->connect_error);
                 }
 
-                // Obtener categorías
-                $categorias = $conexion->query("SELECT * FROM Categorias");
+                // Obtener categorías con el conteo de libros en cada una
+                $categorias = $conexion->query("SELECT Categorias.categoria_id, Categorias.nombre, COUNT(Libros.libro_id) AS cantidad_libros 
+                                                FROM Categorias 
+                                                LEFT JOIN Libro_Categoria ON Categorias.categoria_id = Libro_Categoria.categoria_id
+                                                LEFT JOIN Libros ON Libro_Categoria.libro_id = Libros.libro_id
+                                                GROUP BY Categorias.categoria_id");
+
                 while ($categoria = $categorias->fetch_assoc()) {
-                    echo '<option value="' . $categoria['categoria_id'] . '" ' . (isset($_GET['category']) && $_GET['category'] == $categoria['categoria_id'] ? 'selected' : '') . '>' . $categoria['nombre'] . '</option>';
+                    echo '<option value="' . $categoria['categoria_id'] . '" ' . (isset($_GET['category']) && $_GET['category'] == $categoria['categoria_id'] ? 'selected' : '') . '>';
+                    echo   $categoria['nombre'] . ' (' . $categoria['cantidad_libros'] . ' libros)';
+                    echo '</option>';
                 }
                 ?>
             </select>
