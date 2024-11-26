@@ -155,37 +155,69 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 </div>
 
+<!-- Modal para Editar Libro -->
+<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarModalLabel">Editar Libro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarForm" method="POST" action="editar_libro.php">
+                    <input type="hidden" name="libro_id" id="modalLibroId">
+
+                    <div class="mb-3">
+                        <label for="modalTitulo" class="form-label">Título</label>
+                        <input type="text" class="form-control" id="modalTitulo" name="titulo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalAutor" class="form-label">Autor</label>
+                        <input type="text" class="form-control" id="modalAutor" name="autor" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalEditorial" class="form-label">Editorial</label>
+                        <input type="text" class="form-control" id="modalEditorial" name="editorial">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalAnio" class="form-label">Año de Publicación</label>
+                        <input type="number" class="form-control" id="modalAnio" name="anio_publicacion">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalISBN" class="form-label">ISBN</label>
+                        <input type="text" class="form-control" id="modalISBN" name="isbn">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalEjemplares" class="form-label">Ejemplares Disponibles</label>
+                        <input type="number" class="form-control" id="modalEjemplares" name="ejemplares_disponibles" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script>
     function cargarLibro(libroId) {
-        // Llamada AJAX para cargar la información del libro y sus ejemplares en la modal
-        fetch('cargar_libro.php?libro_id=' + libroId)
-            .then(response => response.json())
-            .then(data => {
-                // Asignar valores a los campos del modal
+    fetch('cargar_libro.php?libro_id=' + libroId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
                 document.getElementById('modalLibroId').value = data.libro_id;
                 document.getElementById('modalTitulo').value = data.titulo;
                 document.getElementById('modalAutor').value = data.autor;
                 document.getElementById('modalEditorial').value = data.editorial;
                 document.getElementById('modalAnio').value = data.anio_publicacion;
                 document.getElementById('modalISBN').value = data.isbn;
+                document.getElementById('modalEjemplares').value = data.ejemplares_disponibles;
+            }
+        });
+}
 
-                // Cargar los ejemplares
-                let ejemplaresDiv = document.getElementById('modalEjemplares');
-                ejemplaresDiv.innerHTML = ''; // Limpiar contenido anterior
-                data.ejemplares.forEach(ejemplar => {
-                    ejemplaresDiv.innerHTML += `
-                        <div class="mb-3">
-                            <label for="ejemplar_${ejemplar.ejemplar_id}" class="form-label">Ejemplar ${ejemplar.codigo_ejemplar}</label>
-                            <input type="text" class="form-control" id="ejemplar_${ejemplar.ejemplar_id}" name="ejemplares[${ejemplar.ejemplar_id}]" value="${ejemplar.estado}">
-                            <button type="button" class="btn btn-danger" onclick="eliminarEjemplar(${ejemplar.ejemplar_id})">Eliminar</button>
-                        </div>
-                    `;
-                });
-            });
-
-
-    }
 
     function eliminarEjemplar(ejemplarId) {
         // Lógica para eliminar un ejemplar, utilizando AJAX para una eliminación rápida

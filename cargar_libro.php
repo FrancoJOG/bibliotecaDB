@@ -39,4 +39,4 @@ if (isset($_GET['libro_id'])) {
 }
 
 $conexion->close();
-?>
+?> 
